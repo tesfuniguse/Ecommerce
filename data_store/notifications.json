@@ -1,0 +1,45 @@
+[
+  {
+    "id": "notif-1782979602334-952",
+    "userId": "user-1782977694503",
+    "titleEn": "Payment Confirmed!",
+    "titleAm": "ክፍያዎ ተረጋግጧል!",
+    "messageEn": "Payment for order ord-1782979361807 has been securely verified. We are preparing your leather products!",
+    "messageAm": "ለትዕዛዝዎ ord-1782979361807 የተደረገው ክፍያ በተሳካ ሁኔታ ተረጋግጧል። እቃዎችዎን በማዘጋጀት ላይ እንገኛለን!",
+    "type": "order",
+    "createdAt": "2026-07-02T08:06:42.334Z",
+    "isRead": false
+  },
+  {
+    "id": "notif-1782979602334-952",
+    "userId": "user-1782977694503",
+    "titleEn": "Payment Confirmed!",
+    "titleAm": "ክፍያዎ ተረጋግጧል!",
+    "messageEn": "Payment for order ord-1782979361807 has been securely verified. We are preparing your leather products!",
+    "messageAm": "ለትዕዛዝዎ ord-1782979361807 የተደረገው ክፍያ በተሳካ ሁኔታ ተረጋግጧል። እቃዎችዎን በማዘጋጀት ላይ እንገኛለን!",
+    "type": "order",
+    "createdAt": "2026-07-02T08:06:42.334Z",
+    "isRead": false
+  },
+  {
+    "id": "notif-1782979361808-128",
+    "userId": "user-1782977694503",
+    "titleEn": "Order Placed Successfully",
+    "titleAm": "ትዕዛዝዎ በተሳካ ሁኔታ ተመዝግቧል",
+    "messageEn": "Order ord-1782979361807 has been placed. Waiting for payment confirmation. Tracking No: ETL-361807-569",
+    "messageAm": "የእርስዎ ትዕዛዝ ቁጥር ord-1782979361807 ተመዝግቧል። ክፍያ እስኪረጋገጥ በመጠባበቅ ላይ። የመከታተያ ቁጥር፡ ETL-361807-569",
+    "type": "order",
+    "createdAt": "2026-07-02T08:02:41.808Z",
+    "isRead": false
+  },
+  {
+    "id": "notif-1",
+    "titleEn": "Welcome to Ethiopian Leather Store!",
+    "titleAm": "እንኳን ወደ ኢትዮጵያ ሌዘር ስቶር በደህና መጡ!",
+    "messageEn": "Thank you for registering. Use promo code GENUINE10 to get 10% off your first purchase!",
+    "messageAm": "ስለተመዘገቡ እናመሰግናለን። ለመጀመሪያው ግዢዎ የ10% ቅናሽ ለማግኘት GENUINE10 የተባለውን ኮድ ይጠቀሙ!",
+    "type": "system",
+    "createdAt": "2026-07-02T07:04:15.042Z",
+    "isRead": false
+  }
+]

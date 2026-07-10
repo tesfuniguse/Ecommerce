@@ -1,0 +1,16 @@
+[
+  {
+    "code": "GENUINE10",
+    "discountPercent": 10,
+    "descriptionEn": "10% discount on all premium leather items",
+    "descriptionAm": "ለሁሉም የቆዳ ውጤቶች የ10% ቅናሽ",
+    "isActive": true
+  },
+  {
+    "code": "ADDISNEW",
+    "discountPercent": 15,
+    "descriptionEn": "Special 15% discount for new arrivals",
+    "descriptionAm": "ለአዳዲስ ምርቶች ልዩ የ15% ቅናሽ",
+    "isActive": true
+  }
+]

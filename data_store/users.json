@@ -1,0 +1,50 @@
+[
+  {
+    "id": "admin-user-id",
+    "name": "Marta Tesfaye (Admin)",
+    "email": "admin@ethiopianleather.com",
+    "role": "admin",
+    "savedAddresses": []
+  },
+  {
+    "id": "test-user-id",
+    "name": "Yonas Kebede",
+    "email": "yonas@gmail.com",
+    "role": "customer",
+    "savedAddresses": [
+      {
+        "id": "addr-1",
+        "fullName": "Yonas Kebede",
+        "city": "Addis Ababa",
+        "subCity": "Bole",
+        "woreda": "03",
+        "phone": "+251911223344",
+        "isDefault": true
+      }
+    ]
+  },
+  {
+    "id": "user-1782975895699",
+    "name": "TESFUNIGUSE19",
+    "email": "tesfuniguse19@gmail.com",
+    "role": "customer",
+    "savedAddresses": []
+  },
+  {
+    "id": "user-1782977694503",
+    "name": "ADMIN",
+    "email": "admin@gmail.com",
+    "role": "admin",
+    "savedAddresses": [
+      {
+        "id": "addr-1782979362402",
+        "fullName": "ADMIN",
+        "city": "Addis Ababa",
+        "subCity": "Bole",
+        "woreda": "03",
+        "phone": "+2519",
+        "isDefault": false
+      }
+    ]
+  }
+]

@@ -1,0 +1,6 @@
+{
+  "name": "Ethiopian Leather E-Commerce",
+  "description": "An elegant, full-stack luxury leather e-commerce platform with dual English & Amharic translations, sales analytics, administrative dashboards, and AI-powered product enhancements.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,18 @@
+[
+  {
+    "id": "rev-1",
+    "productId": "travel-bag-1",
+    "userName": "Abebe D.",
+    "rating": 5,
+    "comment": "The quality of the leather is outstanding! Smells amazing and very spacious. Worth every Birr.",
+    "createdAt": "2026-06-27T07:04:15.042Z"
+  },
+  {
+    "id": "rev-2",
+    "productId": "wallet-set-1",
+    "userName": "Saba T.",
+    "rating": 5,
+    "comment": "Bought this wallet and belt combo as a gift for my husband. He absolutely loves the solid buckle and clean hand-stitching.",
+    "createdAt": "2026-06-30T07:04:15.042Z"
+  }
+]

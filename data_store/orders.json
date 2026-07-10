@@ -1,0 +1,75 @@
+[
+  {
+    "id": "ord-1782979361807",
+    "userId": "user-1782977694503",
+    "userName": "ADMIN",
+    "userEmail": "admin@gmail.com",
+    "items": [
+      {
+        "product": {
+          "id": "messenger-bag-1",
+          "nameEn": "Sheger Classic Messenger Bag",
+          "nameAm": "ሸገር ክላሲክ የመልዕክተኛ ቦርሳ",
+          "descriptionEn": "The perfect companion for the modern professional. Crafted from rich tan pull-up leather that develops a beautiful patina over time. Fits up to a 15-inch laptop, with dedicated compartments for pens, documents, and cards.",
+          "descriptionAm": "ለዘመናዊው ባለሙያ ፍጹም ጓደኛ። ጊዜ ባለፈ ቁጥር ይበልጥ ውበት በሚያገኝ ቀይ-ቡናማ ቆዳ የተሰራ። እስከ 15 ኢንች ላፕቶፕ የሚይዝ ሲሆን ለስክሪብቶዎች፣ ሰነዶች እና ካርዶች ልዩ ክፍሎች አሉት።",
+          "priceETB": 12500,
+          "category": "Leather Bags",
+          "images": [
+            "/src/assets/images/ethiopian_leather_messenger_bag_1782296359538.jpg",
+            "https://picsum.photos/seed/messenger-detail1/800/600"
+          ],
+          "featuresEn": [
+            "Aged pull-up cowhide leather",
+            "Padded 15\" laptop sleeve",
+            "Quick-access magnetic snap closures",
+            "Rear pocket for tablets or files",
+            "Adjustable heavy-duty shoulder strap"
+          ],
+          "featuresAm": [
+            "የቆየ ውበት ያለው የወይፈን ቆዳ",
+            "ለላፕቶፕ ጥበቃ የሚሆን ስፖንጅ ያለው ክፍል",
+            "በቀላሉ የሚከፈቱ ማግኔቲክ መቆለፊያዎች",
+            "ለውስጥ ታብሌት ወይም ሰነዶች የጀርባ ኪስ",
+            "እንደ ፍላጎትዎ ሊረዝም የሚችል ጠንካራ ቀበቶ"
+          ],
+          "rating": 4.8,
+          "reviewsCount": 28,
+          "inventory": 15,
+          "isFeatured": true,
+          "isNewArrival": true,
+          "colorsEn": [
+            "Tan Camel",
+            "Vintage Brown"
+          ],
+          "colorsAm": [
+            "ቀይ ቡናማ",
+            "ቪንቴጅ ቡናማ"
+          ]
+        },
+        "quantity": 1,
+        "selectedColor": "Tan Camel"
+      }
+    ],
+    "subtotal": 12500,
+    "discount": 0,
+    "shipping": 350,
+    "total": 12850,
+    "promoCode": null,
+    "shippingAddress": {
+      "id": "addr-1782979362402",
+      "fullName": "ADMIN",
+      "city": "Addis Ababa",
+      "subCity": "Bole",
+      "woreda": "03",
+      "phone": "+2519",
+      "isDefault": false
+    },
+    "paymentMethod": "telebirr",
+    "paymentStatus": "completed",
+    "orderStatus": "processing",
+    "createdAt": "2026-07-02T08:02:41.807Z",
+    "trackingNumber": "ETL-361807-569",
+    "digitalInvoiceUrl": "/api/orders/invoice-1782979361807.pdf",
+    "paymentReference": "TB-79602452"
+  }
+]
