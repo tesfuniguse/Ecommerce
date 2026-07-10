@@ -105,19 +105,12 @@ async function saveToMongoDB(collectionName: string, data: any) {
   }
 }
 
-// Initialize helper
+// Initialize helper - bypassed to avoid local file storage, using MongoDB as primary
 function readJsonFile<T>(filePath: string, defaultValue: T): T {
-  try {
-    if (!fs.existsSync(filePath)) {
-      fs.writeFileSync(filePath, JSON.stringify(defaultValue, null, 2));
-      return defaultValue;
-    }
-    const content = fs.readFileSync(filePath, 'utf-8');
-    return JSON.parse(content) as T;
-  } catch (err) {
-    console.error(`Error reading ${filePath}:`, err);
-    return defaultValue;
-  }
+  // Always return the default seed/mock values for in-memory initialization on startup.
+  // The server will immediately query and sync with MongoDB Atlas upon successful connection,
+  // overwriting these values with the latest live data from MongoDB Atlas.
+  return defaultValue;
 }
 
 function writeJsonFile<T>(filePath: string, data: T): void {
@@ -140,20 +133,18 @@ function writeJsonFile<T>(filePath: string, data: T): void {
     cleanedData = Array.from(uniqueMap.values());
   }
 
-  try {
-    fs.writeFileSync(filePath, JSON.stringify(cleanedData, null, 2));
-  } catch (err: any) {
-    console.warn(`[Local Storage] Local file write skipped or failed for ${filePath} (normal in serverless):`, err.message);
-  }
+  // We have completely removed local file writes for database persistence
   if (isMongoConnected && mongoDb) {
     const collectionName = Object.keys(FILES).find(
       key => FILES[key as keyof typeof FILES] === filePath
     );
     if (collectionName) {
       saveToMongoDB(collectionName, cleanedData).catch(err => {
-        console.error(`[MongoDB] Failed to write ${collectionName} asynchronously:`, err);
+        console.error(`[MongoDB] Failed to write collection ${collectionName} asynchronously:`, err);
       });
     }
+  } else {
+    console.warn(`[Storage Warning] MongoDB Atlas not connected. In-memory update succeeded, but persistence was skipped.`);
   }
 }
 
@@ -435,15 +426,6 @@ async function syncCollection<T>(collectionName: string, localData: T[], setLoca
       }
 
       setLocalData(cleanedItems);
-      // Synchronize back to JSON file for high-availability local backup
-      const filePath = FILES[collectionName as keyof typeof FILES];
-      if (filePath) {
-        try {
-          fs.writeFileSync(filePath, JSON.stringify(cleanedItems, null, 2));
-        } catch (fileErr: any) {
-          console.warn(`[MongoDB] Local file write backup skipped for collection "${collectionName}" (normal in serverless):`, fileErr.message);
-        }
-      }
     } else if (localData.length > 0) {
       console.log(`[MongoDB] Seeding Atlas collection "${collectionName}" with ${localData.length} documents...`);
       const cloned = localData.map(item => {
@@ -475,14 +457,6 @@ async function syncSingleObject<T>(collectionName: string, localData: T, setLoca
       }
       
       setLocalData(cleaned as T);
-      const filePath = FILES[collectionName as keyof typeof FILES];
-      if (filePath) {
-        try {
-          fs.writeFileSync(filePath, JSON.stringify(cleaned, null, 2));
-        } catch (fileErr: any) {
-          console.warn(`[MongoDB] Local file write backup skipped for single object "${collectionName}" (normal in serverless):`, fileErr.message);
-        }
-      }
     } else {
       console.log(`[MongoDB] Seeding Atlas single object for "${collectionName}"...`);
       const { _id, ...rest } = localData as any;
@@ -1188,10 +1162,8 @@ function addNotification(userId: string, titleEn: string, titleAm: string, messa
     createdAt: new Date().toISOString(),
     isRead: false,
   };
-  const notifications = readJsonFile<any[]>(FILES.notifications, []);
-  notifications.unshift(newNotif);
-  writeJsonFile(FILES.notifications, notifications);
-  dbNotifications = notifications;
+  dbNotifications.unshift(newNotif);
+  writeJsonFile(FILES.notifications, dbNotifications);
 
   // Save to Firestore
   saveDocToFirestore('notifications', newNotif.id, newNotif);
@@ -2864,19 +2836,16 @@ app.post('/api/orders/:id/pay-simulate', (req, res) => {
 
 // Notifications
 app.get('/api/notifications/:userId', (req, res) => {
-  const notifications = readJsonFile<any[]>(FILES.notifications, []);
-  const userNotifs = notifications.filter(n => n.userId === req.params.userId || n.userId === 'all');
+  const userNotifs = (dbNotifications as any[]).filter(n => n.userId === req.params.userId || n.userId === 'all');
   res.json(userNotifs);
 });
 
 app.post('/api/notifications/:id/read', (req, res) => {
-  const notifications = readJsonFile<any[]>(FILES.notifications, []);
-  const index = notifications.findIndex(n => n.id === req.params.id);
+  const index = dbNotifications.findIndex(n => n.id === req.params.id);
   if (index > -1) {
-    notifications[index].isRead = true;
-    writeJsonFile(FILES.notifications, notifications);
-    dbNotifications = notifications;
-    saveDocToFirestore('notifications', req.params.id, notifications[index]);
+    dbNotifications[index].isRead = true;
+    writeJsonFile(FILES.notifications, dbNotifications);
+    saveDocToFirestore('notifications', req.params.id, dbNotifications[index]);
     return res.json({ success: true });
   }
   res.status(404).json({ error: 'Notification not found.' });
