@@ -120,7 +120,7 @@ export default function Hero({ currentLang, onExplore }: HeroProps) {
               </div>
               <div>
                 <p className="text-xs font-mono font-bold text-stone-400 uppercase tracking-widest">
-                  {currentLang === 'en' ? 'Secure Telebirr Invoicing' : 'አስተማማኝ ክፍያ በቴሌብር'}
+                  {currentLang === 'en' ? 'Secure ET-Switch Gateway' : 'አስተማማኝ ክፍያ በኢቲ-ስዊች'}
                 </p>
                 <p className="text-stone-300 text-xs">
                   {currentLang === 'en' ? 'Instant digital receipts and automated delivery tracking' : 'ፈጣን ዲጂታል ደረሰኞች እና ትዕዛዝ ክትትል'}

@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { ChevronDown, HelpCircle, Truck, RotateCcw, Smartphone, Wallet } from 'lucide-react';
+import { ChevronDown, HelpCircle, Truck, RotateCcw, Wallet } from 'lucide-react';
 
 interface FAQItem {
   id: string;
-  category: 'shipping' | 'returns' | 'telebirr';
+  category: 'shipping' | 'returns' | 'et_switch';
   questionEn: string;
   questionAm: string;
   answerEn: string;
@@ -48,26 +48,26 @@ const FAQ_DATA: FAQItem[] = [
     answerAm: 'በፍጹም። በትዕዛዝ ለተሠሩ ጫማዎች እና አልባሳት ነፃ የልኬት ማስተካከያ አገልግሎት እናቀርባለን። የእርስዎ የቆዳ ጃኬት ወይም ጫማ በትክክል እንዲስማማዎት አነስተኛ ማስተካከያ የሚያስፈልገው ከሆነ፣ ዋና የእጅ ባለሙያዎቻችን በ7 ቀናት ውስጥ ያለምንም ተጨማሪ ክፍያ ያስተካክሉታል።',
   },
   {
-    id: 'telebirr-1',
-    category: 'telebirr',
-    questionEn: 'How do I pay securely using Telebirr?',
-    questionAm: 'በቴሌብር (Telebirr) እንዴት በደህና መክፈል እችላለሁ?',
-    answerEn: 'During checkout, simply select "Telebirr" as your payment method. You will be prompted to scan a dynamic QR code using your Telebirr SuperApp, or authenticate using your mobile number and one-time PIN code. Transactions are instant and backed by Ethio Telecom\'s bank-grade security protocols.',
-    answerAm: 'በግዢ ማጠናቀቂያ ወቅት "Telebirr" የሚለውን የክፍያ አማራጭ ይምረጡ። ከዚያም በቴሌብር ሱፐርአፕ (Telebirr SuperApp) ፈጣን የQR ኮድ እንዲያነቡ ወይም በሞባይል ስልክ ቁጥርዎና በምስጢር ቁጥርዎ እንዲያረጋግጡ ይጠየቃሉ። ክፍያው ፈጣንና በኢትዮ ቴሌኮም የባንክ ደረጃ ጥበቃ የተጠበቀ ነው።',
+    id: 'ets-1',
+    category: 'et_switch',
+    questionEn: 'What is ET-Switch and how do I make a secure payment?',
+    questionAm: 'ኢቲ-ስዊች (ET-Switch) ምንድን ነው እና እንዴት በደህና መክፈል እችላለሁ?',
+    answerEn: 'ET-Switch is the unified national payment gateway of Ethiopia, providing interoperability between all commercial banks and mobile wallets. During checkout, choose "ET-Switch Unified Payment" to pay securely using bank cards (EthioPay), direct account debits (CBE, Awash, Dashen, etc.), or digital mobile wallets (Telebirr, CBE Birr). All transactions are encrypted and certified by the National Bank of Ethiopia.',
+    answerAm: 'ኢቲ-ስዊች (ET-Switch) በሁሉም የኢትዮጵያ የንግድ ባንኮች እና የሞባይል ዋሌቶች መካከል ቅንጅት የሚፈጥር አገር አቀፍ የክፍያ ሥርዓት ነው። በቼክአውት ወቅት "Unified Payment (ET-Switch)" የሚለውን በመምረጥ በባንክ ካርዶች (EthioPay)፣ በቀጥታ የባንክ ሒሳብ ዝውውር (ንግድ ባንክ፣ ዳሽን፣ አዋሽ፣ ወዘተ) ወይም በሞባይል ዋሌቶች (ቴሌብር፣ ሲቢኢ ብር) በከፍተኛ ጥበቃ መክፈል ይችላሉ።',
   },
   {
-    id: 'telebirr-2',
-    category: 'telebirr',
-    questionEn: 'How are refunds handled for transactions completed via Telebirr?',
-    questionAm: 'በቴሌብር ለተፈጸሙ ክፍያዎች ተመላሽ ገንዘብ (Refund) እንዴት ነው የሚከናወነው?',
-    answerEn: 'If a transaction is canceled or eligible for a refund, our administrators will release the funds directly back to your connected Telebirr mobile wallet account. Refunds typically post within 24 to 48 hours once verified by our finance department.',
-    answerAm: 'አንድ ግዢ ከተሰረዘ ወይም ተመላሽ ገንዘብ ለማግኘት ብቁ ከሆነ፣ አስተዳዳሪዎቻችን ገንዘቡን በቀጥታ ወደ ተገናኘው የቴሌብር የሞባይል ቦርሳዎ ያስገባሉ። ተመላሽ ገንዘቡ በፋይናንስ ክፍላችን ከተረጋገጠ በኋላ በአብዛኛው ከ24 እስከ 48 ሰዓታት ውስጥ ወደ ሂሳብዎ ይገባል።',
+    id: 'ets-2',
+    category: 'et_switch',
+    questionEn: 'Are there extra charges when using the ET-Switch payment gateway?',
+    questionAm: 'በኢቲ-ስዊች መክፈያ ሥርዓት ሲጠቀሙ ተጨማሪ የአገልግሎት ክፍያ ይጠየቃል?',
+    answerEn: 'No. Zema Leather absorbs all transaction processing fees. Customers only pay the exact checkout amount of their premium handcrafted products without any hidden surcharges.',
+    answerAm: 'በፍጹም። ዜማ ሌዘር (Zema Leather) ሁሉንም የኢቲ-ስዊች የግብይት ክፍያዎች ራሱ የሚሸፍን በመሆኑ፣ ያለ ምንም ተጨማሪ ድብቅ ክፍያ የእቃውን ዋጋ ብቻ ይከፍላሉ።',
   }
 ];
 
 export default function FAQAccordion({ lang }: FAQAccordionProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
-  const [activeCategory, setActiveCategory] = useState<'all' | 'shipping' | 'returns' | 'telebirr'>('all');
+  const [activeCategory, setActiveCategory] = useState<'all' | 'shipping' | 'returns' | 'et_switch'>('all');
 
   const toggleItem = (id: string) => {
     setActiveId(activeId === id ? null : id);
@@ -83,7 +83,7 @@ export default function FAQAccordion({ lang }: FAQAccordionProps) {
         return <Truck className="w-3.5 h-3.5" />;
       case 'returns':
         return <RotateCcw className="w-3.5 h-3.5" />;
-      case 'telebirr':
+      case 'et_switch':
         return <Wallet className="w-3.5 h-3.5" />;
       default:
         return <HelpCircle className="w-3.5 h-3.5" />;
@@ -105,14 +105,14 @@ export default function FAQAccordion({ lang }: FAQAccordionProps) {
           </h3>
           <p className="text-xs text-stone-500 mt-1 leading-relaxed">
             {lang === 'en' 
-              ? 'Learn more about shipping, sizing refinements, returns, and premium Telebirr integrations.' 
-              : 'ስለ ማድረሻ፣ ስለ ልኬት ማስተካከያዎች፣ ስለ ዕቃ መመለስ እና ስለ ቴሌብር አከፋፈል ሂደቶች በዝርዝር ይወቁ።'}
+              ? 'Learn more about shipping, sizing refinements, returns, and unified ET-Switch payment integrations.' 
+              : 'ስለ ማድረሻ፣ ስለ ልኬት ማስተካከያዎች፣ ስለ ዕቃ መመለስ እና ስለ ኢቲ-ስዊች የተቀናጀ የክፍያ ሥርዓቶች በዝርዝር ይወቁ።'}
           </p>
         </div>
 
         {/* Category Filters */}
         <div className="flex flex-wrap gap-2">
-          {(['all', 'shipping', 'returns', 'telebirr'] as const).map((cat) => (
+          {(['all', 'shipping', 'returns', 'et_switch'] as const).map((cat) => (
             <button
               key={cat}
               id={`faq-filter-${cat}`}
@@ -129,7 +129,7 @@ export default function FAQAccordion({ lang }: FAQAccordionProps) {
               {cat === 'all' && (lang === 'en' ? 'All' : 'ሁሉም')}
               {cat === 'shipping' && (lang === 'en' ? 'Shipping' : 'ማድረሻ')}
               {cat === 'returns' && (lang === 'en' ? 'Returns' : 'መልስ')}
-              {cat === 'telebirr' && (lang === 'en' ? 'Telebirr' : 'ቴሌብር')}
+              {cat === 'et_switch' && (lang === 'en' ? 'ET-Switch' : 'ኢቲ-ስዊች')}
             </button>
           ))}
         </div>

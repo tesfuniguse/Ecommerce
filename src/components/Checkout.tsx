@@ -7,7 +7,7 @@ import React, { useState } from 'react';
 import { CreditCard, Truck, CheckCircle, QrCode, ClipboardList, ShieldAlert, Award, FileText, ArrowRight, Sparkles, Camera } from 'lucide-react';
 import { CartItem, Address, Order, PromoCode, User } from '../types';
 import QrScanner from './QrScanner';
-import TelebirrPayment from './TelebirrPayment';
+import EtSwitchPayment from './EtSwitchPayment';
 
 interface CheckoutProps {
   cart: CartItem[];
@@ -37,7 +37,7 @@ export default function Checkout({
   const [selectedAddressId, setSelectedAddressId] = useState<string>('new');
 
   // Payment Method
-  const [paymentMethod, setPaymentMethod] = useState<'telebirr' | 'bank_transfer' | 'cod'>('telebirr');
+  const [paymentMethod, setPaymentMethod] = useState<'et_switch' | 'cod'>('et_switch');
 
   // Checkout workflow step
   const [step, setStep] = useState<'details' | 'payment_sim' | 'success'>('details');
@@ -194,9 +194,7 @@ export default function Checkout({
     if (!createdOrder) return;
     setSimulateSuccess(true);
 
-    const ref = paymentMethod === 'telebirr'
-      ? `TB-${Date.now().toString().slice(-8)}`
-      : `CBE-${Date.now().toString().slice(-8)}`;
+    const ref = `ETS-${Date.now().toString().slice(-8)}`;
 
     try {
       const res = await fetch(`/api/orders/${createdOrder.id}/pay-simulate`, {
@@ -374,52 +372,26 @@ export default function Checkout({
               <div className="grid grid-cols-1 gap-4">
                 <label
                   className={`p-4 rounded-lg border flex items-start justify-between cursor-pointer transition-all ${
-                    paymentMethod === 'telebirr' ? 'bg-amber-600/10 border-amber-500' : 'bg-stone-950 border-stone-850 hover:border-stone-800'
+                    paymentMethod === 'et_switch' ? 'bg-emerald-600/10 border-emerald-500/50' : 'bg-stone-950 border-stone-850 hover:border-stone-800'
                   }`}
                 >
                   <div className="flex items-start space-x-3.5">
                     <input
                       type="radio"
                       name="payment_method"
-                      checked={paymentMethod === 'telebirr'}
-                      onChange={() => setPaymentMethod('telebirr')}
-                      className="text-amber-500 focus:ring-0 mt-1"
+                      checked={paymentMethod === 'et_switch'}
+                      onChange={() => setPaymentMethod('et_switch')}
+                      className="text-emerald-500 focus:ring-0 mt-1"
                     />
                     <div>
-                      <p className="text-sm font-bold text-stone-200 flex items-center gap-1.5">
-                        <span className="bg-blue-600 text-stone-100 font-mono px-1.5 py-0.5 rounded text-[10px] font-bold">telebirr</span>
-                        <span>{currentLang === 'en' ? 'Telebirr Wallet Integration' : 'ክፍያ በቴሌብር የክፍያ ስማርት የኪስ ቦርሳ'}</span>
+                      <p className="text-sm font-bold text-stone-200 flex items-center gap-1.5 flex-wrap">
+                        <span className="bg-emerald-600 text-stone-100 font-mono px-1.5 py-0.5 rounded text-[10px] font-bold">ET-Switch Interoperable</span>
+                        <span>{currentLang === 'en' ? 'Unified National Payment Gateway' : 'የተቀናጀ የኢትዮጵያ ባንኮችና ዋሌቶች መክፈያ (ኢቲ-ስዊች)'}</span>
                       </p>
                       <p className="text-xs text-stone-400 mt-1 leading-relaxed">
                         {currentLang === 'en'
-                          ? 'Instant digital verification. Generates a secure invoice QR code. Scanned from your Telebirr app.'
-                          : 'ፈጣን ዲጂታል ማረጋገጫ። ከቴሌብር መተግበሪያዎ የሚቃኝ የ QR ኮድ ያመነጫል።'}
-                      </p>
-                    </div>
-                  </div>
-                </label>
-
-                <label
-                  className={`p-4 rounded-lg border flex items-start justify-between cursor-pointer transition-all ${
-                    paymentMethod === 'bank_transfer' ? 'bg-amber-600/10 border-amber-500' : 'bg-stone-950 border-stone-850 hover:border-stone-800'
-                  }`}
-                >
-                  <div className="flex items-start space-x-3.5">
-                    <input
-                      type="radio"
-                      name="payment_method"
-                      checked={paymentMethod === 'bank_transfer'}
-                      onChange={() => setPaymentMethod('bank_transfer')}
-                      className="text-amber-500 focus:ring-0 mt-1"
-                    />
-                    <div>
-                      <p className="text-sm font-bold text-stone-200">
-                        {currentLang === 'en' ? 'Bank Transfer (CBE, Awash, Dashen)' : 'በባንክ ማስተላለፍ (CBE፣ አዋሽ፣ ዳሽን)'}
-                      </p>
-                      <p className="text-xs text-stone-400 mt-1 leading-relaxed">
-                        {currentLang === 'en'
-                          ? 'Manually transfer using your mobile banking app. Send reference and clear screenshot for speed confirmation.'
-                          : 'በተንቀሳቃሽ ስልክ ባንክ መተግበሪያዎ ያስተላልፉ። ፈጣን ማረጋገጫ ለማግኘት የማጣቀሻ ቁጥር ይላኩ።'}
+                          ? 'Pay instantly using any Ethiopian bank card (EthioPay), bank account transfer (CBE, Dashen, Awash, etc.), or digital wallets (Telebirr, CBE Birr).'
+                          : 'ክፍያዎን በማንኛውም የኢትዮጵያ ባንክ ካርድ (EthioPay)፣ ቀጥታ የባንክ ሒሳብ ዝውውር (ንግድ ባንክ፣ ዳሽን፣ አዋሽ፣ ወዘተ) ወይም በሞባይል ዋሌት (ቴሌብር፣ ሲቢኢ ብር) ወዲያውኑ ይፈጽሙ።'}
                       </p>
                     </div>
                   </div>
@@ -593,10 +565,10 @@ export default function Checkout({
         </form>
       )}
 
-      {/* Payment simulation (for Telebirr/Bank Transfer) */}
+      {/* Payment simulation (for ET-Switch Unified Gateway) */}
       {step === 'payment_sim' && createdOrder && (
-        paymentMethod === 'telebirr' ? (
-          <TelebirrPayment
+        paymentMethod === 'et_switch' ? (
+          <EtSwitchPayment
             order={createdOrder}
             currentLang={currentLang}
             onPaymentSuccess={(updatedOrder) => {
@@ -607,52 +579,44 @@ export default function Checkout({
             onCancel={() => setStep('details')}
           />
         ) : (
-          <div className="max-w-md mx-auto bg-stone-900 border border-amber-500/15 rounded-lg p-6 text-center space-y-6">
-            <div className="w-16 h-16 rounded-full bg-amber-600/10 flex items-center justify-center text-amber-500 mx-auto">
-              <QrCode className="w-8 h-8 animate-pulse" />
+          <div className="max-w-md mx-auto bg-stone-900 border border-emerald-500/15 rounded-lg p-6 text-center space-y-6">
+            <div className="w-16 h-16 rounded-full bg-emerald-600/10 flex items-center justify-center text-emerald-500 mx-auto">
+              <CheckCircle className="w-8 h-8 animate-pulse" />
             </div>
 
             <div>
               <h2 className="text-lg font-sans font-bold text-stone-100">
-                {currentLang === 'en' ? 'CBE Bank Transfer Instruction' : 'የCBE ባንክ ዝውውር መመሪያ'}
+                {currentLang === 'en' ? 'Direct Order Checkout' : 'ቀጥታ የትዕዛዝ መውጫ'}
               </h2>
               <p className="text-xs text-stone-400 mt-1 font-mono">
                 Order ID: {createdOrder.id} | Amount: {createdOrder.total.toLocaleString()} ETB
               </p>
             </div>
 
-            {/* Payment instructions details */}
             <div className="bg-stone-950 p-5 rounded-lg border border-stone-850 text-left space-y-3.5">
-              <p className="text-xs font-bold text-amber-500 uppercase font-mono">
-                Commercial Bank of Ethiopia (CBE)
-              </p>
-              <div className="space-y-1 bg-stone-900 p-3 rounded text-xs font-mono">
-                <p><span className="text-stone-500">Account Name:</span> Ethiopian Leather Store</p>
-                <p><span className="text-stone-500">Account Number:</span> 1000459812403</p>
-                <p><span className="text-stone-500">Amount due:</span> {createdOrder.total.toLocaleString()} ETB</p>
+              <div className="space-y-1 bg-stone-900 p-3 rounded text-xs font-mono text-stone-300">
+                <p><span className="text-stone-500">Order Ref:</span> {createdOrder.id}</p>
+                <p><span className="text-stone-500">Total Amount:</span> {createdOrder.total.toLocaleString()} ETB</p>
               </div>
-              <p className="text-[11px] text-stone-400 leading-relaxed">
+              <p className="text-xs text-stone-400 leading-relaxed">
                 {currentLang === 'en'
-                  ? 'Transfer the total amount via CBE Birr or Mobile Banking, then enter the transaction reference number below to simulate automatic confirmation.'
-                  : 'ጠቅላላ ሂሳቡን በCBE Birr ወይም በሞባይል ባንኪንግ ያስተላልፉ፣ ከዚያ ክፍያውን ለማረጋገጥ የማጣቀሻ ቁጥሩን ከታች ያስገቡ።'}
+                  ? 'Confirm your order. Since Cash On Delivery is selected, you can authorize order finalization below.'
+                  : 'የመረጡትን ትዕዛዝ ያረጋግጡ። እቃው ሲደርስ የሚከፈል ስለሆነ ትዕዛዙን ከታች ማጠናቀቅ ይችላሉ።'}
               </p>
             </div>
 
-            {/* Simulate actions */}
             <div className="space-y-3">
               <button
                 onClick={handleSimulatePayment}
                 disabled={simulateSuccess}
-                className="w-full bg-emerald-600 hover:bg-emerald-500 text-stone-100 py-3.5 rounded-md font-sans font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center space-x-2 cursor-pointer"
+                className="w-full bg-emerald-600 hover:bg-emerald-500 text-stone-950 py-3.5 rounded-md font-sans font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center space-x-2 cursor-pointer"
               >
                 {simulateSuccess ? (
-                  <span>{currentLang === 'en' ? 'Verifying payment on CBE...' : 'ክፍያ በመረጋገጥ ላይ...'}</span>
+                  <span>{currentLang === 'en' ? 'Completing checkout...' : 'ትዕዛዙን በማጠናቀቅ ላይ...'}</span>
                 ) : (
-                  <>
-                    <span>
-                      {currentLang === 'en' ? 'Verify CBE Bank Transfer Instantly' : 'ክፍያውን አሁን አረጋግጥ'}
-                    </span>
-                  </>
+                  <span>
+                    {currentLang === 'en' ? 'Complete Checkout Instantly' : 'የግዢ ሂደቱን አሁን አጠናቅ'}
+                  </span>
                 )}
               </button>
 
@@ -660,7 +624,7 @@ export default function Checkout({
                 onClick={() => { setStep('details'); }}
                 className="w-full border border-stone-700 bg-stone-900/50 hover:bg-stone-800 text-stone-300 py-3.5 rounded-md font-sans font-semibold text-xs uppercase tracking-wider transition-all cursor-pointer"
               >
-                {currentLang === 'en' ? 'Cancel & Edit Details' : 'ይቅርዝ ማስተካከያ'}
+                {currentLang === 'en' ? 'Cancel & Edit Details' : 'ይቅርብኝ / አስተካክል'}
               </button>
             </div>
           </div>

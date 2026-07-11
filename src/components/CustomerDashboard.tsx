@@ -152,13 +152,11 @@ export default function CustomerDashboard({
 
     // Payment details
     const methodMapEn: { [key: string]: string } = {
-      telebirr: 'Telebirr Mobile Payment',
-      bank_transfer: 'CBE Birr / Commercial Bank Transfer',
+      et_switch: 'ET-Switch Unified Payment',
       cod: 'Cash on Delivery (COD)'
     };
     const methodMapAm: { [key: string]: string } = {
-      telebirr: 'በቴሌብር የሞባይል ክፍያ',
-      bank_transfer: 'በኢትዮጵያ ንግድ ባንክ ሒሳብ ማስተላለፍ',
+      et_switch: 'በኢቲ-ስዊች የተቀናጀ ክፍያ',
       cod: 'በእጅ ሲረከቡ የሚከፈል (COD)'
     };
     const paymentMethodStr = currentLang === 'en' 

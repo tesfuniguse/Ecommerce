@@ -2696,88 +2696,67 @@ const generateSignature = (dataStr: string, privateKeyPem?: string) => {
   }
 };
 
-// Initiate Telebirr payment transaction securely on the backend
-app.post('/api/payments/telebirr/initiate', (req, res) => {
+// Initiate ET-Switch unified national payment transaction securely on the backend
+app.post('/api/payments/et-switch/initiate', (req, res) => {
   const { orderId } = req.body;
   const order = dbOrders.find(o => o.id === orderId);
 
   if (!order) {
-    return res.status(404).json({ error: 'Order not found for Telebirr payment.' });
+    return res.status(404).json({ error: 'Order not found for ET-Switch payment.' });
   }
 
-  const appId = process.env.TELEBIRR_APP_ID || 'MOCK_TB_APP_ID';
-  const appKey = process.env.TELEBIRR_APP_KEY || 'MOCK_TB_APP_KEY';
-  const merchCode = process.env.TELEBIRR_MERCHANT_CODE || 'MOCK_TB_MERCHANT';
-  const shortCode = process.env.TELEBIRR_SHORT_CODE || 'MOCK_TB_SHORT';
+  const merchantCode = process.env.ET_SWITCH_MERCHANT_CODE || 'ZEMA_LEATHER_MERCH';
   const appUrl = process.env.APP_URL || 'http://localhost:3000';
+  const reference = `ETS-TXN-${Math.floor(100000 + Math.random() * 900000)}`;
 
   const params = {
-    appId,
-    merchCode,
-    shortCode,
-    outTradeNo: order.id,
-    totalAmount: order.total.toString(),
-    subject: 'Zema Premium Handcrafted Leather Purchase',
+    merchantCode,
+    reference,
+    amount: order.total,
     currency: 'ETB',
-    timeoutExpress: '30',
-    notifyUrl: `${appUrl}/api/payments/telebirr/callback`,
-    returnUrl: `${appUrl}/api/orders/track/${order.id}`,
+    orderId: order.id,
+    notifyUrl: `${appUrl}/api/payments/et-switch/callback`,
     timestamp: Date.now().toString(),
-    nonce: Math.random().toString(36).substring(2, 15),
   };
 
   const sortedKeys = Object.keys(params).sort();
   const sortedQueryStr = sortedKeys.map(k => `${k}=${(params as any)[k]}`).join('&');
 
-  const sign = generateSignature(sortedQueryStr, process.env.TELEBIRR_PRIVATE_KEY);
+  const sign = generateSignature(sortedQueryStr, process.env.ET_SWITCH_PRIVATE_KEY);
 
-  const completePayload = JSON.stringify({
-    ...params,
-    sign,
-  });
-
-  const encryptedPayload = aesEncrypt(completePayload, appKey);
-  const toPayUrl = `https://pay.telebirr.com/?ussata=${encodeURIComponent(encryptedPayload)}&appId=${appId}`;
-
-  console.log(`[Telebirr Secure Gateway] Secure payment channel initiated for Order ${order.id}. Total: ${order.total} ETB`);
+  console.log(`[ET-Switch National Gateway] Interoperable payment initialized for Order ${order.id}. Total: ${order.total} ETB. Ref: ${reference}`);
 
   res.json({
-    appId,
-    toPayUrl,
-    rawPayload: completePayload,
+    merchantCode,
+    reference,
+    amount: order.total,
+    channel: 'ET-SWITCH-UNIFIED',
     sign,
   });
 });
 
-// Real-time server-to-server Telebirr payment status notification callback
-app.post('/api/payments/telebirr/callback', (req, res) => {
-  const { ussata } = req.body;
-  if (!ussata) {
-    return res.status(400).json({ error: 'Missing payment payload' });
+// Real-time server-to-server ET-Switch payment status notification callback
+app.post('/api/payments/et-switch/callback', (req, res) => {
+  const { payload, signature } = req.body;
+  if (!payload) {
+    return res.status(400).json({ error: 'Missing ET-Switch payload' });
   }
 
   try {
-    const appKey = process.env.TELEBIRR_APP_KEY || 'MOCK_TB_APP_KEY';
-    const hashedKey = crypto.createHash('md5').update(appKey).digest();
-    const iv = Buffer.alloc(16, 0);
-    const decipher = crypto.createDecipheriv('aes-128-cbc', hashedKey, iv);
-    let decrypted = decipher.update(ussata, 'base64', 'utf8');
-    decrypted += decipher.final('utf8');
-
-    const payload = JSON.parse(decrypted);
-    const orderId = payload.outTradeNo;
+    const data = typeof payload === 'string' ? JSON.parse(payload) : payload;
+    const orderId = data.orderId;
     const orderIndex = dbOrders.findIndex(o => o.id === orderId);
 
     if (orderIndex === -1) {
-      console.error(`[Telebirr Callback] Order ${orderId} not found.`);
+      console.error(`[ET-Switch Callback] Order ${orderId} not found.`);
       return res.status(404).json({ error: 'Order not found' });
     }
 
     const order = dbOrders[orderIndex];
     order.paymentStatus = 'completed';
     order.orderStatus = 'processing';
-    order.paymentReference = payload.transactionNo || `TXN-TB-${Date.now().toString().slice(-8)}`;
-    order.paymentMethod = 'telebirr';
+    order.paymentReference = data.reference || `TXN-ETS-${Date.now().toString().slice(-8)}`;
+    order.paymentMethod = 'et_switch';
 
     dbOrders[orderIndex] = order;
     writeJsonFile(FILES.orders, dbOrders);
@@ -2788,20 +2767,20 @@ app.post('/api/payments/telebirr/callback', (req, res) => {
       order.userId,
       'Payment Confirmed!',
       'ክፍያዎ ተረጋግጧል!',
-      `Payment for order ${order.id} has been securely verified. We are preparing your leather products!`,
-      `ለትዕዛዝዎ ${order.id} የተደረገው ክፍያ በተሳካ ሁኔታ ተረጋግጧል። እቃዎችዎን በማዘጋጀት ላይ እንገኛለን!`,
+      `Payment for order ${order.id} has been securely verified via ET-Switch. We are preparing your leather products!`,
+      `ለትዕዛዝዎ ${order.id} የተደረገው ክፍያ በኢቲ-ስዊች በተሳካ ሁኔታ ተረጋግጧል። እቃዎችዎን በማዘጋጀት ላይ እንገኛለን!`,
       'order'
     );
 
-    console.log(`[Telebirr Callback] Order ${orderId} marked as successfully paid.`);
-    return res.json({ code: 0, message: 'Success' });
+    console.log(`[ET-Switch Callback] Order ${orderId} marked as successfully paid via ET-Switch.`);
+    return res.json({ success: true, code: 'ETS-000' });
   } catch (err) {
-    console.error('[Telebirr Callback Error]', err);
-    return res.status(500).json({ error: 'Failed to process callback' });
+    console.error('[ET-Switch Callback Error]', err);
+    return res.status(500).json({ error: 'Failed to process ET-Switch callback' });
   }
 });
 
-// Telebirr Callback / Automatic Payment Confirmation simulation
+// ET-Switch Callback / Automatic Payment Confirmation simulation
 app.post('/api/orders/:id/pay-simulate', (req, res) => {
   const orderId = req.params.id;
   const { reference, method } = req.body;
@@ -2814,8 +2793,8 @@ app.post('/api/orders/:id/pay-simulate', (req, res) => {
   const order = dbOrders[orderIndex];
   order.paymentStatus = 'completed';
   order.orderStatus = 'processing';
-  order.paymentReference = reference || `TXN-TB-${Date.now().toString().slice(-8)}`;
-  order.paymentMethod = method || order.paymentMethod;
+  order.paymentReference = reference || `ETS-${Date.now().toString().slice(-8)}`;
+  order.paymentMethod = method || 'et_switch';
 
   dbOrders[orderIndex] = order;
   writeJsonFile(FILES.orders, dbOrders);

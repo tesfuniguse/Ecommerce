@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import { motion, AnimatePresence } from 'motion/react';
+import GoogleLiveTrackingMap from './GoogleLiveTrackingMap';
 
 interface OrderStatusProps {
   currentLang: 'en' | 'am';
@@ -263,6 +264,7 @@ function OrderStatusProgressBar({ order, currentLang }: OrderStatusProgressBarPr
   const actualDetails = getProgressDetails(order.orderStatus);
   const [selectedIdx, setSelectedIdx] = useState(actualDetails.index);
   const [activeTab, setActiveTab] = useState<'craft' | 'simulator' | 'logs'>('craft');
+  const [mapMode, setMapMode] = useState<'schematic' | 'satellite'>('satellite');
 
   // Simulator state
   const [isSimulating, setIsSimulating] = useState(false);
@@ -819,6 +821,24 @@ function OrderStatusProgressBar({ order, currentLang }: OrderStatusProgressBarPr
                 </div>
 
                 <div className="flex flex-wrap items-center gap-3 self-center lg:self-auto">
+                  {/* Map View Mode Toggle */}
+                  <div className="flex bg-stone-950 border border-stone-850 rounded p-0.5 text-[9px] font-mono">
+                    <button
+                      type="button"
+                      onClick={() => setMapMode('satellite')}
+                      className={`px-2.5 py-1 rounded transition-all cursor-pointer ${mapMode === 'satellite' ? 'bg-amber-600 font-bold text-stone-950' : 'text-stone-400 hover:text-stone-200'}`}
+                    >
+                      {currentLang === 'en' ? '🛰️ Google Map' : '🛰️ የጎግል ካርታ'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setMapMode('schematic')}
+                      className={`px-2.5 py-1 rounded transition-all cursor-pointer ${mapMode === 'schematic' ? 'bg-amber-600 font-bold text-stone-950' : 'text-stone-400 hover:text-stone-200'}`}
+                    >
+                      {currentLang === 'en' ? '📊 Schematic' : '📊 ንድፈ-ሀሳብ'}
+                    </button>
+                  </div>
+
                   {/* Speed toggle */}
                   <div className="flex bg-stone-950 border border-stone-850 rounded p-0.5 text-[9px] font-mono">
                     <button
@@ -872,14 +892,14 @@ function OrderStatusProgressBar({ order, currentLang }: OrderStatusProgressBarPr
                 </div>
               </div>
 
-              {/* Main Visual SVG Route Journey Map */}
+              {/* Main Visual Route Journey Map Container */}
               <div className="bg-stone-950 border border-stone-850 p-6 rounded-lg relative overflow-hidden flex flex-col">
                 <div className="flex justify-between items-center mb-4">
                   <span className="text-[9px] font-mono font-bold text-stone-500 uppercase tracking-widest flex items-center gap-1">
                     <Map className="w-3.5 h-3.5 text-amber-500" />
                     {currentLang === 'en' ? 'Interactive Flight / Route Telemetry' : 'የቀጥታ ጉዞ ካርታ መረጃ'}
                   </span>
-                  {simProgress > 0 && (
+                  {simProgress > 0 && mapMode === 'schematic' && (
                     <span className="text-[10px] font-mono font-bold text-amber-500 flex items-center gap-1 animate-pulse">
                       <Navigation className="w-3 h-3 text-amber-500" />
                       GPS: {simulatedGps.lat.toFixed(4)}° N, {simulatedGps.lng.toFixed(4)}° E
@@ -887,88 +907,97 @@ function OrderStatusProgressBar({ order, currentLang }: OrderStatusProgressBarPr
                   )}
                 </div>
 
-                {/* SVG Map Path */}
-                <div className="w-full h-32 bg-stone-900/40 rounded border border-stone-900/60 relative overflow-hidden flex items-center justify-center">
-                  {/* Visual grid lines for military-grade telemetry styling */}
-                  <div className="absolute inset-0 bg-[linear-gradient(to_right,#1c1917_1px,transparent_1px),linear-gradient(to_bottom,#1c1917_1px,transparent_1px)] bg-[size:24px_24px] opacity-40"></div>
+                {/* Conditional Map View */}
+                {mapMode === 'satellite' ? (
+                  <GoogleLiveTrackingMap
+                    currentLang={currentLang}
+                    subCity={order.shippingAddress.subCity}
+                    simProgress={simProgress}
+                  />
+                ) : (
+                  /* SVG Map Path */
+                  <div className="w-full h-32 bg-stone-900/40 rounded border border-stone-900/60 relative overflow-hidden flex items-center justify-center">
+                    {/* Visual grid lines for military-grade telemetry styling */}
+                    <div className="absolute inset-0 bg-[linear-gradient(to_right,#1c1917_1px,transparent_1px),linear-gradient(to_bottom,#1c1917_1px,transparent_1px)] bg-[size:24px_24px] opacity-40"></div>
 
-                  <svg className="w-full h-full" viewBox="0 0 490 110" preserveAspectRatio="none">
-                    {/* Background Connecting Path Line */}
-                    <path
-                      d="M 45 70 Q 110 30 175 35 T 305 95 Q 370 70 435 55"
-                      fill="none"
-                      stroke="#292524"
-                      strokeWidth="3"
-                      strokeLinecap="round"
-                    />
-
-                    {/* Glowing Filled Sim Path Line */}
-                    {simProgress > 0 && (
+                    <svg className="w-full h-full" viewBox="0 0 490 110" preserveAspectRatio="none">
+                      {/* Background Connecting Path Line */}
                       <path
                         d="M 45 70 Q 110 30 175 35 T 305 95 Q 370 70 435 55"
                         fill="none"
-                        stroke="url(#sim-gradient)"
-                        strokeWidth="3.5"
+                        stroke="#292524"
+                        strokeWidth="3"
                         strokeLinecap="round"
-                        strokeDasharray="490"
-                        strokeDashoffset={490 - (490 * simProgress) / 100}
-                        className="transition-all duration-300"
                       />
-                    )}
 
-                    {/* Gradients */}
-                    <defs>
-                      <linearGradient id="sim-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" stopColor="#d97706" />
-                        <stop offset="100%" stopColor="#f59e0b" />
-                      </linearGradient>
-                    </defs>
+                      {/* Glowing Filled Sim Path Line */}
+                      {simProgress > 0 && (
+                        <path
+                          d="M 45 70 Q 110 30 175 35 T 305 95 Q 370 70 435 55"
+                          fill="none"
+                          stroke="url(#sim-gradient)"
+                          strokeWidth="3.5"
+                          strokeLinecap="round"
+                          strokeDasharray="490"
+                          strokeDashoffset={490 - (490 * simProgress) / 100}
+                          className="transition-all duration-300"
+                        />
+                      )}
 
-                    {/* Station nodes */}
-                    {/* Node 1: Bole */}
-                    <circle cx="45" cy="70" r="5" fill={simProgress >= 25 ? '#f59e0b' : '#292524'} stroke={simProgress >= 25 ? '#fff' : '#44403c'} strokeWidth="1.5" />
-                    <text x="45" y="88" fill={simProgress >= 25 ? '#fff' : '#78716c'} fontSize="8" fontFamily="monospace" textAnchor="middle" fontWeight="bold">BOLE</text>
+                      {/* Gradients */}
+                      <defs>
+                        <linearGradient id="sim-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                          <stop offset="0%" stopColor="#d97706" />
+                          <stop offset="100%" stopColor="#f59e0b" />
+                        </linearGradient>
+                      </defs>
 
-                    {/* Node 2: Lideta */}
-                    <circle cx="175" cy="35" r="5" fill={simProgress >= 50 ? '#f59e0b' : '#292524'} stroke={simProgress >= 50 ? '#fff' : '#44403c'} strokeWidth="1.5" />
-                    <text x="175" y="22" fill={simProgress >= 50 ? '#fff' : '#78716c'} fontSize="8" fontFamily="monospace" textAnchor="middle" fontWeight="bold">LIDETA</text>
+                      {/* Station nodes */}
+                      {/* Node 1: Bole */}
+                      <circle cx="45" cy="70" r="5" fill={simProgress >= 25 ? '#f59e0b' : '#292524'} stroke={simProgress >= 25 ? '#fff' : '#44403c'} strokeWidth="1.5" />
+                      <text x="45" y="88" fill={simProgress >= 25 ? '#fff' : '#78716c'} fontSize="8" fontFamily="monospace" textAnchor="middle" fontWeight="bold">BOLE</text>
 
-                    {/* Node 3: Piazza */}
-                    <circle cx="305" cy="95" r="5" fill={simProgress >= 80 ? '#f59e0b' : '#292524'} stroke={simProgress >= 80 ? '#fff' : '#44403c'} strokeWidth="1.5" />
-                    <text x="305" y="108" fill={simProgress >= 80 ? '#fff' : '#78716c'} fontSize="8" fontFamily="monospace" textAnchor="middle" fontWeight="bold">PIAZZA</text>
+                      {/* Node 2: Lideta */}
+                      <circle cx="175" cy="35" r="5" fill={simProgress >= 50 ? '#f59e0b' : '#292524'} stroke={simProgress >= 50 ? '#fff' : '#44403c'} strokeWidth="1.5" />
+                      <text x="175" y="22" fill={simProgress >= 50 ? '#fff' : '#78716c'} fontSize="8" fontFamily="monospace" textAnchor="middle" fontWeight="bold">LIDETA</text>
 
-                    {/* Node 4: Destination */}
-                    <circle cx="435" cy="55" r="5" fill={simProgress >= 100 ? '#10b981' : '#292524'} stroke={simProgress >= 100 ? '#fff' : '#44403c'} strokeWidth="1.5" />
-                    <text x="435" y="42" fill={simProgress >= 100 ? '#10b981' : '#78716c'} fontSize="8" fontFamily="monospace" textAnchor="middle" fontWeight="bold">HOME</text>
+                      {/* Node 3: Piazza */}
+                      <circle cx="305" cy="95" r="5" fill={simProgress >= 80 ? '#f59e0b' : '#292524'} stroke={simProgress >= 80 ? '#fff' : '#44403c'} strokeWidth="1.5" />
+                      <text x="305" y="108" fill={simProgress >= 80 ? '#fff' : '#78716c'} fontSize="8" fontFamily="monospace" textAnchor="middle" fontWeight="bold">PIAZZA</text>
 
-                    {/* Moving vehicle dot */}
+                      {/* Node 4: Destination */}
+                      <circle cx="435" cy="55" r="5" fill={simProgress >= 100 ? '#10b981' : '#292524'} stroke={simProgress >= 100 ? '#fff' : '#44403c'} strokeWidth="1.5" />
+                      <text x="435" y="42" fill={simProgress >= 100 ? '#10b981' : '#78716c'} fontSize="8" fontFamily="monospace" textAnchor="middle" fontWeight="bold">HOME</text>
+
+                      {/* Moving vehicle dot */}
+                      {simProgress > 0 && (
+                        <circle
+                          cx={simulatedPos.x}
+                          cy={simulatedPos.y}
+                          r="8"
+                          fill="#d97706"
+                          stroke="#fff"
+                          strokeWidth="2"
+                          className="transition-all duration-300 shadow-[0_0_15px_rgba(245,158,11,0.8)]"
+                        />
+                      )}
+                    </svg>
+
+                    {/* Simulated location label overlay */}
                     {simProgress > 0 && (
-                      <circle
-                        cx={simulatedPos.x}
-                        cy={simulatedPos.y}
-                        r="8"
-                        fill="#d97706"
-                        stroke="#fff"
-                        strokeWidth="2"
-                        className="transition-all duration-300 shadow-[0_0_15px_rgba(245,158,11,0.8)]"
-                      />
+                      <div
+                        className="absolute px-2.5 py-1 bg-amber-600 text-stone-950 text-[9px] font-mono font-bold rounded shadow-lg select-none transition-all duration-300 flex items-center gap-1"
+                        style={{
+                          left: `${Math.max(10, Math.min(80, (simulatedPos.x / 490) * 100))}%`,
+                          top: `${Math.max(10, Math.min(70, (simulatedPos.y / 110) * 100 - 15))}%`
+                        }}
+                      >
+                        <Truck className="w-3.5 h-3.5 animate-bounce" />
+                        <span>{simulatedPos.name} ({simProgress}%)</span>
+                      </div>
                     )}
-                  </svg>
-
-                  {/* Simulated location label overlay */}
-                  {simProgress > 0 && (
-                    <div
-                      className="absolute px-2.5 py-1 bg-amber-600 text-stone-950 text-[9px] font-mono font-bold rounded shadow-lg select-none transition-all duration-300 flex items-center gap-1"
-                      style={{
-                        left: `${Math.max(10, Math.min(80, (simulatedPos.x / 490) * 100))}%`,
-                        top: `${Math.max(10, Math.min(70, (simulatedPos.y / 110) * 100 - 15))}%`
-                      }}
-                    >
-                      <Truck className="w-3.5 h-3.5 animate-bounce" />
-                      <span>{simulatedPos.name} ({simProgress}%)</span>
-                    </div>
-                  )}
-                </div>
+                  </div>
+                )}
 
                 {/* Simulated Telemetry Logging console */}
                 <div className="mt-4 space-y-2">

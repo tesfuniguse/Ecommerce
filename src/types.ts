@@ -77,9 +77,9 @@ export interface Order {
   total: number;
   promoCode?: string;
   shippingAddress: Address;
-  paymentMethod: 'telebirr' | 'bank_transfer' | 'cod';
+  paymentMethod: 'et_switch' | 'cod';
   paymentStatus: 'pending' | 'completed' | 'failed';
-  paymentReference?: string; // e.g. Telebirr transaction ID
+  paymentReference?: string; // e.g. ET-Switch transaction ID
   orderStatus: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
   createdAt: string;
   trackingNumber: string;

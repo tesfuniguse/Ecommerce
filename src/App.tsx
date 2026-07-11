@@ -972,7 +972,7 @@ export default function App() {
     setIsDashboardOpen(false);
   };
 
-  const scrollToFAQ = (category?: 'shipping' | 'returns' | 'telebirr') => {
+  const scrollToFAQ = (category?: 'shipping' | 'returns' | 'et_switch') => {
     setIsAdminMode(false);
     setIsDashboardOpen(false);
     setCheckoutOpen(false);
@@ -1777,10 +1777,10 @@ export default function App() {
             <ul className="space-y-2 text-xs">
               <li>
                 <button
-                  onClick={(e) => { e.preventDefault(); scrollToFAQ('telebirr'); }}
+                  onClick={(e) => { e.preventDefault(); scrollToFAQ('et_switch'); }}
                   className="hover:text-amber-500 transition-colors cursor-pointer text-left font-sans"
                 >
-                  {lang === 'en' ? 'Telebirr Wallet FAQs' : 'የቴሌብር አከፋፈል መመሪያዎች'}
+                  {lang === 'en' ? 'ET-Switch Payment FAQs' : 'የኢቲ-ስዊች አከፋፈል መመሪያዎች'}
                 </button>
               </li>
               <li>
