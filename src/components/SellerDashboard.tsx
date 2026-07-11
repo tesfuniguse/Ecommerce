@@ -5,6 +5,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { User, Product, Order } from '../types';
+import { alertSystem } from '../lib/alerts';
 import {
   DollarSign, Package, ShoppingBag, TrendingUp, Plus, Edit, Trash2, Check, Truck,
   Settings, Star, X, ChevronRight, Search, Activity, FileText, Upload, Clock, ShieldCheck, HelpCircle,
@@ -200,18 +201,28 @@ export default function SellerDashboard({
   };
 
   // Delete product
-  const handleDeleteProduct = async (pId: string) => {
-    if (!window.confirm(currentLang === 'en' ? 'Are you sure you want to delete this listing?' : 'ይህን ምርት ከሽያጭ ዝርዝር ውስጥ መሰረዝ መፈለግዎን ያረጋግጣሉ?')) return;
-    try {
-      const res = await fetch(`/api/seller/products/${pId}?sellerId=${user.id}`, {
-        method: 'DELETE'
-      });
-      if (res.ok) {
-        onRefreshProducts();
-      }
-    } catch (err) {
-      console.error(err);
-    }
+  const handleDeleteProduct = (pId: string) => {
+    alertSystem.showConfirm(
+      currentLang === 'en' ? 'Are you sure you want to delete this listing?' : 'ይህን ምርት ከሽያጭ ዝርዝር ውስጥ መሰረዝ መፈለግዎን ያረጋግጣሉ?',
+      async () => {
+        try {
+          const res = await fetch(`/api/seller/products/${pId}?sellerId=${user.id}`, {
+            method: 'DELETE'
+          });
+          if (res.ok) {
+            onRefreshProducts();
+            alertSystem.showAlert(
+              currentLang === 'en' ? 'Listing deleted successfully.' : 'ምርቱ ከሽያጭ ዝርዝር ውስጥ በተሳካ ሁኔታ ተሰርዟል።',
+              { type: 'success' }
+            );
+          }
+        } catch (err) {
+          console.error(err);
+        }
+      },
+      undefined,
+      { type: 'danger' }
+    );
   };
 
   // Update specific item fulfillment inside a customer order

@@ -17,6 +17,8 @@ import SellerDashboard from './components/SellerDashboard';
 import OrderStatus from './components/OrderStatus';
 import FAQAccordion from './components/FAQAccordion';
 import { Sparkles, Heart, X, Search, ShoppingBag, Eye, LogIn, ChevronLeft, ChevronRight, Award, Bell, CheckCircle, Mail, Tag, Copy, Check, AlertTriangle, RefreshCw, Share2, QrCode, ArrowLeftRight, Star, ShoppingCart, Github, Linkedin } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import { alertSystem } from './lib/alerts';
 
 /**
  * A robust fetch wrapper that handles timeouts, checks content-types,
@@ -208,6 +210,58 @@ export default function App() {
   const [isSellerMode, setIsSellerMode] = useState(false);
   const [showWhatsAppQR, setShowWhatsAppQR] = useState(false);
   const [qrCopied, setQrCopied] = useState(false);
+
+  // Custom User-friendly Alert & Confirm state
+  const [customToasts, setCustomToasts] = useState<Array<{ id: string; message: string; title?: string; type: 'success' | 'error' | 'warning' | 'info' }>>([]);
+  const [customConfirm, setCustomConfirm] = useState<{
+    message: string;
+    title?: string;
+    onConfirm: () => void;
+    onCancel?: () => void;
+    confirmText?: string;
+    cancelText?: string;
+    type?: 'danger' | 'warning' | 'info';
+  } | null>(null);
+
+  useEffect(() => {
+    const unsubscribeAlert = alertSystem.onAlert((message, options) => {
+      const id = `toast-${Date.now()}-${Math.random()}`;
+      setCustomToasts(prev => [...prev, {
+        id,
+        message,
+        title: options?.title,
+        type: options?.type || 'info'
+      }]);
+      
+      const duration = options?.duration || 4500;
+      setTimeout(() => {
+        setCustomToasts(prev => prev.filter(t => t.id !== id));
+      }, duration);
+    });
+
+    const unsubscribeConfirm = alertSystem.onConfirm((message, onConfirm, onCancel, options) => {
+      setCustomConfirm({
+        message,
+        title: options?.title,
+        onConfirm: () => {
+          setCustomConfirm(null);
+          onConfirm();
+        },
+        onCancel: () => {
+          setCustomConfirm(null);
+          onCancel?.();
+        },
+        confirmText: options?.confirmText,
+        cancelText: options?.cancelText,
+        type: options?.type || 'info'
+      });
+    });
+
+    return () => {
+      unsubscribeAlert();
+      unsubscribeConfirm();
+    };
+  }, []);
 
   // Newsletter Signup for Returning Users State & Effects
   const [newsletterOpen, setNewsletterOpen] = useState(false);
@@ -2911,6 +2965,111 @@ export default function App() {
           </div>
         </div>
       )}
+
+      {/* Custom User-friendly Toast Notifications */}
+      <div className="fixed top-24 right-6 z-[100] flex flex-col gap-3 max-w-sm w-full pointer-events-none">
+        <AnimatePresence>
+          {customToasts.map(toast => {
+            const typeColors = {
+              success: 'bg-emerald-950/95 border-emerald-500/30 text-emerald-400 shadow-emerald-950/10',
+              error: 'bg-rose-950/95 border-rose-500/30 text-rose-400 shadow-rose-950/10',
+              warning: 'bg-amber-950/95 border-amber-500/30 text-amber-400 shadow-amber-950/10',
+              info: 'bg-stone-900/95 border-stone-750 text-stone-200 shadow-stone-950/10'
+            };
+            
+            const Icon = toast.type === 'success' ? CheckCircle : 
+                         toast.type === 'error' ? X : 
+                         toast.type === 'warning' ? AlertTriangle : 
+                         Bell;
+                         
+            return (
+              <motion.div 
+                key={toast.id}
+                initial={{ opacity: 0, x: 50, scale: 0.9 }}
+                animate={{ opacity: 1, x: 0, scale: 1 }}
+                exit={{ opacity: 0, x: 50, scale: 0.9 }}
+                transition={{ duration: 0.2 }}
+                className={`pointer-events-auto flex items-start gap-3 p-4 rounded-lg border shadow-xl backdrop-blur-md ${typeColors[toast.type]}`}
+              >
+                <div className="shrink-0 p-1 rounded bg-stone-950/40">
+                  <Icon className="w-4 h-4" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  {toast.title && <h5 className="text-[11px] font-mono font-bold uppercase tracking-wider mb-1 text-stone-100">{toast.title}</h5>}
+                  <p className="text-xs font-sans leading-relaxed">{toast.message}</p>
+                </div>
+                <button 
+                  onClick={() => setCustomToasts(prev => prev.filter(t => t.id !== toast.id))}
+                  className="shrink-0 text-stone-400 hover:text-white p-0.5 rounded cursor-pointer transition-colors"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </motion.div>
+            );
+          })}
+        </AnimatePresence>
+      </div>
+
+      {/* Custom User-friendly Confirmation Dialog Modal */}
+      <AnimatePresence>
+        {customConfirm && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-stone-950/80 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.15 }}
+              className="bg-stone-900 border border-stone-800 rounded-xl p-6 max-w-md w-full shadow-2xl relative text-stone-200 overflow-hidden"
+            >
+              {/* Top Warning Stripe */}
+              <div className={`absolute top-0 inset-x-0 h-1 ${
+                customConfirm.type === 'danger' ? 'bg-red-500' :
+                customConfirm.type === 'warning' ? 'bg-amber-500' : 'bg-amber-500'
+              }`} />
+
+              <div className="flex gap-4 items-start">
+                <div className={`p-2 rounded-lg shrink-0 border ${
+                  customConfirm.type === 'danger' ? 'bg-red-500/10 border-red-500/20 text-red-500' :
+                  customConfirm.type === 'warning' ? 'bg-amber-500/10 border-amber-500/20 text-amber-500' :
+                  'bg-stone-800 border-stone-700 text-amber-500'
+                }`}>
+                  {customConfirm.type === 'danger' ? <AlertTriangle className="w-5 h-5 animate-pulse" /> :
+                   customConfirm.type === 'warning' ? <AlertTriangle className="w-5 h-5" /> :
+                   <Sparkles className="w-5 h-5" />}
+                </div>
+
+                <div className="flex-1 min-w-0 space-y-2">
+                  <h4 className="text-sm font-bold text-stone-100 font-mono tracking-wide uppercase">
+                    {customConfirm.title || (lang === 'en' ? 'Confirmation Required' : 'ማረጋገጫ ያስፈልጋል')}
+                  </h4>
+                  <p className="text-xs text-stone-300 font-sans leading-relaxed">
+                    {customConfirm.message}
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-6 flex justify-end gap-3">
+                <button
+                  onClick={customConfirm.onCancel}
+                  className="px-4 py-2 bg-stone-950 border border-stone-800 hover:border-stone-750 text-stone-400 hover:text-stone-200 rounded text-xs font-bold uppercase tracking-wider cursor-pointer transition-colors"
+                >
+                  {customConfirm.cancelText || (lang === 'en' ? 'Cancel' : 'ሰርዝ')}
+                </button>
+                <button
+                  onClick={customConfirm.onConfirm}
+                  className={`px-5 py-2 rounded text-xs font-bold uppercase tracking-wider cursor-pointer transition-all ${
+                    customConfirm.type === 'danger' ? 'bg-red-600 hover:bg-red-500 text-stone-100' :
+                    customConfirm.type === 'warning' ? 'bg-amber-600 hover:bg-amber-500 text-stone-950' :
+                    'bg-amber-600 hover:bg-amber-500 text-stone-950'
+                  }`}
+                >
+                  {customConfirm.confirmText || (lang === 'en' ? 'Confirm' : 'አረጋግጥ')}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
     </div>
   );

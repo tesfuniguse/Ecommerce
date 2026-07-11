@@ -5,6 +5,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { User, Order, Address, SystemNotification } from '../types';
+import { alertSystem } from '../lib/alerts';
 import { ShoppingBag, MapPin, User as UserIcon, Bell, Settings, LogOut, CheckCircle, Clock, Truck, FileText, TrendingUp, Printer, ShieldCheck, AlertTriangle, Package, RefreshCw } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 
@@ -486,27 +487,32 @@ export default function CustomerDashboard({
     }
   };
 
-  const handleDeleteAccount = async () => {
+  const handleDeleteAccount = () => {
     const confirmMsg = currentLang === 'en'
       ? 'WARNING: Are you absolutely sure you want to permanently delete your account? This action cannot be undone.'
       : 'ማስጠንቀቂያ፡ መለያዎን በቋሚነት ለመሰረዝ እርግጠኛ ነዎት? ይህ ድርጊት ወደኋላ ሊመለስ አይችልም።';
-    if (!window.confirm(confirmMsg)) return;
-
-    try {
-      const res = await fetch(`/api/auth/profile?userId=${user.id}`, {
-        method: 'DELETE',
-      });
-      if (res.ok) {
-        onLogout();
-        onClose();
-      } else {
-        const data = await res.json();
-        alert(data.error || 'Failed to delete account.');
-      }
-    } catch (err) {
-      console.error(err);
-      alert('Error occurred while deleting account.');
-    }
+    alertSystem.showConfirm(
+      confirmMsg,
+      async () => {
+        try {
+          const res = await fetch(`/api/auth/profile?userId=${user.id}`, {
+            method: 'DELETE',
+          });
+          if (res.ok) {
+            onLogout();
+            onClose();
+          } else {
+            const data = await res.json();
+            alertSystem.showAlert(data.error || 'Failed to delete account.', { type: 'error' });
+          }
+        } catch (err) {
+          console.error(err);
+          alertSystem.showAlert('Error occurred while deleting account.', { type: 'error' });
+        }
+      },
+      undefined,
+      { type: 'danger' }
+    );
   };
 
   const handleAddAddress = async (e: React.FormEvent) => {

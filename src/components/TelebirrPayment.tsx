@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { Order } from '../types';
 import { motion, AnimatePresence } from 'motion/react';
+import { alertSystem } from '../lib/alerts';
 
 interface TelebirrPaymentProps {
   order: Order;
@@ -146,7 +147,7 @@ export default function TelebirrPayment({
       }
     } catch (err) {
       console.error(err);
-      alert('Simulation failed. Please try again.');
+      alertSystem.showAlert('Simulation failed. Please try again.', { type: 'error' });
     } finally {
       setSimulatingCallback(false);
     }

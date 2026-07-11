@@ -5,6 +5,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Product, Order, PromoCode, SalesReport, User } from '../types';
+import { alertSystem } from '../lib/alerts';
 import {
   TrendingUp, ShoppingCart, Users, Package, AlertTriangle, Plus, Edit, Trash2,
   Check, X, RefreshCw, Calendar, Tag, ShieldCheck, BarChart3, Search, ShieldAlert,
@@ -301,21 +302,34 @@ export default function AdminDashboard({
       });
   };
 
-  const handleClearSubscriptions = async () => {
-    if (!window.confirm(currentLang === 'en' ? 'Are you sure you want to clear all waitlist subscriptions?' : 'ሁሉንም የምርት ማሳወቂያ ምዝገባዎችን ማጽዳት ይፈልጋሉ?')) return;
-    try {
-      const res = await fetch('/api/admin/back-in-stock/subscriptions/clear', { method: 'POST' });
-      if (res.ok) {
-        setWaitlistSubs([]);
-      }
-    } catch (err) {
-      console.error(err);
-    }
+  const handleClearSubscriptions = () => {
+    alertSystem.showConfirm(
+      currentLang === 'en' ? 'Are you sure you want to clear all waitlist subscriptions?' : 'ሁሉንም የምርት ማሳወቂያ ምዝገባዎችን ማጽዳት ይፈልጋሉ?',
+      async () => {
+        try {
+          const res = await fetch('/api/admin/back-in-stock/subscriptions/clear', { method: 'POST' });
+          if (res.ok) {
+            setWaitlistSubs([]);
+            alertSystem.showAlert(
+              currentLang === 'en' ? 'Subscriptions cleared successfully.' : 'የምርት ማሳወቂያ ምዝገባዎች በተሳካ ሁኔታ ተጽድተዋል።',
+              { type: 'success' }
+            );
+          }
+        } catch (err) {
+          console.error(err);
+        }
+      },
+      undefined,
+      { type: 'warning' }
+    );
   };
 
   const handleExportCSV = () => {
     if (!allProducts || allProducts.length === 0) {
-      alert(currentLang === 'en' ? 'No products available to export.' : 'ለመላክ ምንም ምርቶች የሉም።');
+      alertSystem.showAlert(
+        currentLang === 'en' ? 'No products available to export.' : 'ለመላክ ምንም ምርቶች የሉም።',
+        { type: 'warning' }
+      );
       return;
     }
 
@@ -532,23 +546,32 @@ export default function AdminDashboard({
     }
   };
 
-  const handleDeleteUser = async (userId: string) => {
+  const handleDeleteUser = (userId: string) => {
     const confirmMsg = currentLang === 'en'
       ? 'Are you sure you want to permanently delete this user account?'
       : 'ይህንን የተጠቃሚ መለያ በቋሚነት ለመሰረዝ እርግጠኛ ነዎት?';
-    if (!window.confirm(confirmMsg)) return;
-
-    try {
-      const res = await fetch(`/api/admin/users/${userId}`, {
-        method: 'DELETE',
-      });
-      if (res.ok) {
-        loadUsers();
-        loadStats();
-      }
-    } catch (err) {
-      console.error(err);
-    }
+    alertSystem.showConfirm(
+      confirmMsg,
+      async () => {
+        try {
+          const res = await fetch(`/api/admin/users/${userId}`, {
+            method: 'DELETE',
+          });
+          if (res.ok) {
+            loadUsers();
+            loadStats();
+            alertSystem.showAlert(
+              currentLang === 'en' ? 'User account deleted successfully.' : 'የተጠቃሚው መለያ በተሳካ ሁኔታ ተሰርዟል።',
+              { type: 'success' }
+            );
+          }
+        } catch (err) {
+          console.error(err);
+        }
+      },
+      undefined,
+      { type: 'danger' }
+    );
   };
 
   // CSV line parser that respects quotes
@@ -794,49 +817,68 @@ export default function AdminDashboard({
     }
   };
 
-  const handleDeleteProduct = async (pId: string) => {
-    if (!confirm('Are you sure you want to delete this product?')) return;
-    try {
-      const res = await fetch(`/api/admin/products/${pId}`, { method: 'DELETE' });
-      if (res.ok) {
-        // Remove from selected list if present
-        setSelectedProductIds(prev => prev.filter(id => id !== pId));
-        onRefreshProducts();
-      }
-    } catch (err) {
-      console.error(err);
-    }
+  const handleDeleteProduct = (pId: string) => {
+    alertSystem.showConfirm(
+      currentLang === 'en' ? 'Are you sure you want to delete this product?' : 'ይህን ምርት መሰረዝ እርግጠኛ ነዎት?',
+      async () => {
+        try {
+          const res = await fetch(`/api/admin/products/${pId}`, { method: 'DELETE' });
+          if (res.ok) {
+            // Remove from selected list if present
+            setSelectedProductIds(prev => prev.filter(id => id !== pId));
+            onRefreshProducts();
+            alertSystem.showAlert(
+              currentLang === 'en' ? 'Product deleted successfully.' : 'ምርቱ በተሳካ ሁኔታ ተሰርዟል።',
+              { type: 'success' }
+            );
+          }
+        } catch (err) {
+          console.error(err);
+        }
+      },
+      undefined,
+      { type: 'danger' }
+    );
   };
 
-  const handleBulkDeleteProducts = async () => {
+  const handleBulkDeleteProducts = () => {
     if (selectedProductIds.length === 0) return;
     
     const confirmMessage = currentLang === 'en' 
       ? `Are you sure you want to delete the ${selectedProductIds.length} selected products?` 
       : `የተመረጡትን ${selectedProductIds.length} ምርቶች ለማጥፋት እርግጠኛ ነዎት?`;
 
-    if (!window.confirm(confirmMessage)) return;
-
-    setIsBulkDeleting(true);
-    try {
-      const res = await fetch('/api/admin/products/bulk-delete', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ids: selectedProductIds }),
-      });
-      if (res.ok) {
-        setSelectedProductIds([]);
-        onRefreshProducts();
-      } else {
-        const errData = await res.json();
-        alert(errData.error || 'Failed to delete products.');
-      }
-    } catch (err) {
-      console.error(err);
-      alert('An error occurred during bulk deletion.');
-    } finally {
-      setIsBulkDeleting(false);
-    }
+    alertSystem.showConfirm(
+      confirmMessage,
+      async () => {
+        setIsBulkDeleting(true);
+        try {
+          const res = await fetch('/api/admin/products/bulk-delete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ids: selectedProductIds }),
+          });
+          if (res.ok) {
+            setSelectedProductIds([]);
+            onRefreshProducts();
+            alertSystem.showAlert(
+              currentLang === 'en' ? 'Selected products deleted successfully.' : 'የተመረጡት ምርቶች በተሳካ ሁኔታ ተሰርዘዋል።',
+              { type: 'success' }
+            );
+          } else {
+            const errData = await res.json();
+            alertSystem.showAlert(errData.error || 'Failed to delete products.', { type: 'error' });
+          }
+        } catch (err) {
+          console.error(err);
+          alertSystem.showAlert('An error occurred during bulk deletion.', { type: 'error' });
+        } finally {
+          setIsBulkDeleting(false);
+        }
+      },
+      undefined,
+      { type: 'danger' }
+    );
   };
 
   const handleProductImageUpload = async (file: File) => {
@@ -863,16 +905,20 @@ export default function AdminDashboard({
             }
             return prev;
           });
+          alertSystem.showAlert(
+            currentLang === 'en' ? 'Product image uploaded successfully.' : 'የምስል ጭነት በተሳካ ሁኔታ ተጠናቋል።',
+            { type: 'success' }
+          );
         } else {
           const err = await res.json();
-          alert(`Image upload failed: ${err.error || 'Server error'}`);
+          alertSystem.showAlert(`Image upload failed: ${err.error || 'Server error'}`, { type: 'error' });
         }
         setUploadingImage(false);
       };
       reader.readAsDataURL(file);
     } catch (e: any) {
       console.error('Error uploading image:', e);
-      alert('Error uploading image: ' + e.message);
+      alertSystem.showAlert('Error uploading image: ' + e.message, { type: 'error' });
       setUploadingImage(false);
     }
   };
@@ -1587,7 +1633,10 @@ export default function AdminDashboard({
                         ? `[\n  {\n    "nameEn": "Elite Leather Wallet",\n    "nameAm": "ጥራት ያለው የኪስ ቦርሳ",\n    "descriptionEn": "Genuine Ethiopian sheepskin leather wallet.",\n    "descriptionAm": "ከኢትዮጵያ በግ ቆዳ የተሰራ እውነተኛ የኪስ ቦርሳ።",\n    "priceETB": 1500,\n    "category": "Leather Bags",\n    "inventory": 50,\n    "images": ["https://picsum.photos/seed/wallet/800/600"],\n    "featuresEn": ["6 card slots", "Coin pocket"],\n    "featuresAm": ["6 የመታወቂያ ማስቀመጫዎች", "የሳንቲም ኪስ"]\n  }\n]`
                         : `nameEn,nameAm,descriptionEn,descriptionAm,priceETB,category,inventory,images,featuresEn,featuresAm\n"Elite Leather Wallet","ጥራት ያለው የኪስ ቦርሳ","Genuine Ethiopian sheepskin leather wallet.","ከኢትዮጵያ በግ ቆዳ የተሰራ እውነተኛ የኪስ ቦርሳ።",1500,"Leather Bags",50,"https://picsum.photos/seed/wallet/800/600","6 card slots;Coin pocket","6 የመታወቂያ ማስቀመጫዎች;የሳንቲም ኪስ"`;
                       navigator.clipboard.writeText(sampleText);
-                      alert(currentLang === 'en' ? 'Template copied to clipboard!' : 'ምሳሌው ወደ ቅንጥብ ሰሌዳ ተገልብጧል!');
+                      alertSystem.showAlert(
+                        currentLang === 'en' ? 'Template copied to clipboard!' : 'ምሳሌው ወደ ቅንጥብ ሰሌዳ ተገልብጧል!',
+                        { type: 'success' }
+                      );
                     }}
                     className="text-[10px] bg-stone-800 hover:bg-stone-700 text-stone-200 px-2 py-1 rounded cursor-pointer font-bold uppercase transition-colors"
                   >
@@ -3046,7 +3095,10 @@ export default function AdminDashboard({
                       body: JSON.stringify(alertSettings)
                     });
                     if (res.ok) {
-                      alert(currentLang === 'en' ? 'Configurations saved successfully!' : 'ቅንብሮችዎ በተሳካ ሁኔታ ተቀምጠዋል!');
+                      alertSystem.showAlert(
+                        currentLang === 'en' ? 'Configurations saved successfully!' : 'ቅንብሮችዎ በተሳካ ሁኔታ ተቀምጠዋል!',
+                        { type: 'success' }
+                      );
                       loadAlertSettings();
                     }
                   } catch (err) {
@@ -3069,14 +3121,14 @@ export default function AdminDashboard({
                     const res = await fetch('/api/admin/email-alerts/test', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) });
                     const data = await res.json();
                     if (res.ok) {
-                      alert(data.message || 'Test Low Stock warning triggered!');
+                      alertSystem.showAlert(data.message || 'Test Low Stock warning triggered!', { type: 'success' });
                       loadAlertLogs();
                     } else {
-                      alert(`❌ Error: ${data.error || 'Failed to dispatch test email.'}`);
+                      alertSystem.showAlert(`❌ Error: ${data.error || 'Failed to dispatch test email.'}`, { type: 'error' });
                     }
                   } catch (err: any) {
                     console.error(err);
-                    alert(`❌ Network/Server Error: ${err.message || String(err)}`);
+                    alertSystem.showAlert(`❌ Network/Server Error: ${err.message || String(err)}`, { type: 'error' });
                   } finally {
                     setTestEmailLoading(false);
                   }
@@ -3091,7 +3143,10 @@ export default function AdminDashboard({
                 type="button"
                 onClick={async () => {
                   if (!alertSettings.adminPhone) {
-                    alert(currentLang === 'en' ? 'Please set an Administrator phone number first.' : 'እባክዎ መጀመሪያ የአድሚን ስልክ ቁጥር ያስቀምጡ።');
+                    alertSystem.showAlert(
+                      currentLang === 'en' ? 'Please set an Administrator phone number first.' : 'እባክዎ መጀመሪያ የአድሚን ስልክ ቁጥር ያስቀምጡ።',
+                      { type: 'warning' }
+                    );
                     return;
                   }
                   setTestSmsLoading(true);
@@ -3099,11 +3154,11 @@ export default function AdminDashboard({
                     const res = await fetch('/api/admin/sms-alerts/test', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ phone: alertSettings.adminPhone }) });
                     if (res.ok) {
                       const data = await res.json();
-                      alert(data.message || 'Test SMS notification sent!');
+                      alertSystem.showAlert(data.message || 'Test SMS notification sent!', { type: 'success' });
                       loadAlertLogs();
                     } else {
                       const errData = await res.json();
-                      alert(`Error: ${errData.error}`);
+                      alertSystem.showAlert(`Error: ${errData.error}`, { type: 'error' });
                     }
                   } catch (err) {
                     console.error(err);
@@ -3130,10 +3185,17 @@ export default function AdminDashboard({
                 </h3>
                 {emailAlerts.length > 0 && (
                   <button
-                    onClick={async () => {
-                      if (!confirm('Clear history?')) return;
-                      await fetch('/api/admin/email-alerts/clear', { method: 'POST' });
-                      setEmailAlerts([]);
+                    onClick={() => {
+                      alertSystem.showConfirm(
+                        'Clear email logs history?',
+                        async () => {
+                          await fetch('/api/admin/email-alerts/clear', { method: 'POST' });
+                          setEmailAlerts([]);
+                          alertSystem.showAlert('Email logs cleared.', { type: 'success' });
+                        },
+                        undefined,
+                        { type: 'danger' }
+                      );
                     }}
                     className="text-[10px] text-red-400 hover:underline font-semibold cursor-pointer"
                   >
@@ -3178,10 +3240,17 @@ export default function AdminDashboard({
                 </h3>
                 {smsAlerts.length > 0 && (
                   <button
-                    onClick={async () => {
-                      if (!confirm('Clear history?')) return;
-                      await fetch('/api/admin/sms-alerts/clear', { method: 'POST' });
-                      setSmsAlerts([]);
+                    onClick={() => {
+                      alertSystem.showConfirm(
+                        'Clear SMS logs history?',
+                        async () => {
+                          await fetch('/api/admin/sms-alerts/clear', { method: 'POST' });
+                          setSmsAlerts([]);
+                          alertSystem.showAlert('SMS logs cleared.', { type: 'success' });
+                        },
+                        undefined,
+                        { type: 'danger' }
+                      );
                     }}
                     className="text-[10px] text-red-400 hover:underline font-semibold cursor-pointer"
                   >
@@ -3406,9 +3475,12 @@ export default function AdminDashboard({
                       if (res.ok) {
                         const updated = await res.json();
                         setTelegramSettings(updated);
-                        alert(currentLang === 'en' ? 'Telegram configurations saved successfully!' : 'የቴሌግራም ቅንብሮች በተሳካ ሁኔታ ተቀምጠዋል!');
+                        alertSystem.showAlert(
+                          currentLang === 'en' ? 'Telegram configurations saved successfully!' : 'የቴሌግራም ቅንብሮች በተሳካ ሁኔታ ተቀምጠዋል!',
+                          { type: 'success' }
+                        );
                       } else {
-                        alert('Failed to save settings.');
+                        alertSystem.showAlert('Failed to save settings.', { type: 'error' });
                       }
                     } catch (err) {
                       console.error(err);
@@ -3511,16 +3583,17 @@ export default function AdminDashboard({
                               });
                               const data = await res.json();
                               if (res.ok && data.success) {
-                                alert(
+                                alertSystem.showAlert(
                                   data.isSimulated 
                                     ? `[SIMULATION SUCCESS]\n\n${data.message}\n\nContent:\n${data.sentContent.caption.substring(0, 200)}...`
-                                    : `[TELEGRAM SUCCESS]\n\nSuccessfully posted to Telegram!\nMessage ID: ${data.telegramMessageId}`
+                                    : `[TELEGRAM SUCCESS]\n\nSuccessfully posted to Telegram!\nMessage ID: ${data.telegramMessageId}`,
+                                  { type: 'success' }
                                 );
                               } else {
-                                alert(`Failed to post: ${data.error || 'Unknown error'}`);
+                                alertSystem.showAlert(`Failed to post: ${data.error || 'Unknown error'}`, { type: 'error' });
                               }
                             } catch (err: any) {
-                              alert(`Error posting: ${err.message}`);
+                              alertSystem.showAlert(`Error posting: ${err.message}`, { type: 'error' });
                             } finally {
                               setTelegramPostLoading(null);
                             }
